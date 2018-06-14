@@ -1,0 +1,1 @@
+/watches/tmp_watch       IN_CREATE /scripts/example_script.sh "$$(echo "$@/$#" | sed 's/\\//g')"
