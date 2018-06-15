@@ -1,0 +1,13 @@
+#!/usr/bin/with-contenv bash
+
+UMASK_SET=${UMASK_SET:-022}
+
+umask "${UMASK_SET}"
+
+chown -R abc:abc /var/log/cron /var/spool/cron
+
+# Puts cron in the forground logging to /var/log/cron/cron.log
+exec \
+  crond -f -l 0 \
+  -c /var/spool/cron/crontabs \
+  -L /var/log/cron/cron.log
