@@ -19,7 +19,8 @@ FROM bashell/alpine-bash:latest
 MAINTAINER Aaron U'Ren <aauren@gmail.com>
 
 RUN apk update \
-  && apk add incron
+  && apk add incron \
+  && apk add curl
 
 RUN mkdir -p /watches /scripts
 
