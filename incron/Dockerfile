@@ -20,7 +20,8 @@ MAINTAINER Aaron U'Ren <aauren@gmail.com>
 
 RUN apk update \
   && apk add incron \
-  && apk add curl
+  && apk add curl \
+  && apk add strace
 
 RUN mkdir -p /watches /scripts
 
