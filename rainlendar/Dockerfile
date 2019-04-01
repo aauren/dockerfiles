@@ -16,14 +16,18 @@
 FROM ubuntu
 MAINTAINER Aaron U'Ren <aauren@gmail.com>
 
-ADD http://www.rainlendar.net/download/rainlendar2-pro_2.13.b145-1_amd64.deb /src/rainlendar2.deb
+ADD http://www.rainlendar.net/download/b159/rainlendar2-pro_2.14.3.b159-1_amd64.deb /src/rainlendar2.deb
 
-RUN apt-get update \
+RUN echo "==== Updating apt-get ====" && apt-get update \
+  && echo "==== Running apt-get install for rainlendar dependencies ====" \
   && apt-get install -qqy libcurl3 libatk1.0-0 libcairo2 libfontconfig1 libfreetype6 libglib2.0-0 libgtk2.0-0 \
-     libpango1.0-0 libx11-6 libxinerama1 libwebkitgtk-1.0-0 libcanberra0 \
-  && dpkg -i /src/rainlendar2.deb \
-  && rm -rf /var/lib/apt/lists/* \
-  && rm /src/*.deb
+     libpango1.0-0 libx11-6 libxinerama1 libwebkitgtk-1.0-0 libcanberra0 libjavascriptcoregtk-1.0-0 libpng16-16 \
+     libexpat1 \
+  && echo "==== Unpacking rainlendar ====" && dpkg --unpack /src/rainlendar2.deb \
+  && echo "==== Fixing postinst - Removing sudo calls ====" && sed -i 's/sudo //g' /var/lib/dpkg/info/rainlendar2-pro.postinst \
+  && echo "==== Configuring rainlendar ====" && dpkg --configure rainlendar2-pro \
+  && echo "==== Cleaning up apt ====" && rm -rf /var/lib/apt/lists/* \
+  && echo "==== Cleaning up rainlendar source ====" && rm /src/*.deb
 
 RUN useradd -ms /bin/bash rainlendar
 
