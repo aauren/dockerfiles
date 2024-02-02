@@ -1,14 +1,12 @@
 FROM ubuntu:22.04
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     zsh curl wget openssh-server strace iproute2 dstat tshark lshw usbutils pciutils net-tools vim tcpdump \
-      software-properties-common bmon ncdu
+      software-properties-common bmon ncdu less containerd git build-essential file jq
 
-# kubectl
-RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
-      -o /usr/local/bin
+# Install brew
+RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
+    && /bin/bash -c "(echo; echo 'eval "'"'"$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"'"'"') >> /root/.bashrc"
 
-# helm
-RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 \
-    && chmod 700 get_helm.sh \
-    && ./get_helm.sh
+# various additional brew utilities
+RUN /home/linuxbrew/.linuxbrew/bin/brew install kubectl nerdctl cri-tools helm
