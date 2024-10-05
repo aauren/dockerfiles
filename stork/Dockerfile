@@ -1,7 +1,8 @@
 FROM ubuntu:24.04
 
 # Install curl first
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends curl
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      curl gpg sed grep python3 pip
 
 # Install Stork apt repos
 COPY bash.deb.sh /bash.deb.sh
@@ -17,7 +18,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 # Setup directories
 RUN mkdir -p /var/log/supervisor \
       && mkdir -p /etc/supervisor/conf.d/ \
-      && mkdir -p /usr/lib/stork-server/hooks
+      && mkdir -p /usr/lib/stork-server/hooks \
+      && mkdir -p /usr/share/stork/www/assets/pkgs
 
 # COPY config files
 COPY supervisord.conf /etc/supervisor/supervisord.conf
