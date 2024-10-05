@@ -16,7 +16,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 
 # Setup directories
 RUN mkdir -p /var/log/supervisor \
-      && mkdir -p /etc/supervisor/conf.d/
+      && mkdir -p /etc/supervisor/conf.d/ \
+      && mkdir -p /usr/lib/stork-server/hooks
 
 # COPY config files
 COPY supervisord.conf /etc/supervisor/supervisord.conf
