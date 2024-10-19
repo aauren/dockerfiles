@@ -4,7 +4,7 @@ FROM ubuntu:22.04
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     zsh curl wget openssh-server strace iproute2 dstat tshark lshw usbutils pciutils net-tools vim tcpdump \
       software-properties-common bmon ncdu less containerd git build-essential file jq traceroute ipvsadm ipset \
-      iptables python3 python3-pip \
+      iptables python3 python3-pip tcpflow termshark \
       && apt-get clean \
       && rm -rf /var/lib/apt/lists/*
 
