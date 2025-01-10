@@ -15,13 +15,13 @@
 #   -v "/tmp/watch_folder:/watches/tmp_watch" -v "/tmp/watch_output:/tmp/watch_output" \
 #   aauren/incron:latest
 
-FROM bashell/alpine-bash:latest
-MAINTAINER Aaron U'Ren <aauren@gmail.com>
+FROM alpine:latest
 
 RUN apk update \
   && apk add incron \
   && apk add curl \
-  && apk add strace
+  && apk add strace \
+  && apk add bash
 
 RUN mkdir -p /watches /scripts
 
