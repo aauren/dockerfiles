@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CURRENT_VERSION="1.1.0"
+CURRENT_VERSION="1.1.1"
 
 docker build -t aauren/incron:${CURRENT_VERSION} -t aauren/incron:latest . || exit 1
 

@@ -25,4 +25,4 @@ RUN apk update \
 
 RUN mkdir -p /watches /scripts
 
-CMD /usr/sbin/incrond
+CMD ["/usr/sbin/incrond", "-n"]
