@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CURRENT_VERSION="1.0.6"
+CURRENT_VERSION="1.0.7"
 
 docker build -t aauren/stork:${CURRENT_VERSION} -t aauren/stork:latest .
 
