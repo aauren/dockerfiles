@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CURRENT_VERSION="1.1.1"
+CURRENT_VERSION="1.1.2"
 
 docker build --pull --no-cache -t aauren/stork:${CURRENT_VERSION} -t aauren/stork:latest .
 
