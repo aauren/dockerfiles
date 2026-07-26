@@ -18,9 +18,10 @@ RUN deluser stork-server \
             -g "Stork Server User" stork-server
 
 # Neither directory ships in the package, but the server wants both: hooks for the LDAP hook and
-# friends, pkgs for the agent installers it serves out of the web UI
+# friends, pkgs for the agent installers it serves out of the web UI. Both are read-only to Stork,
+# so they stay root owned and merely need to be world readable
 RUN mkdir -p /usr/lib/stork-server/hooks /usr/share/stork/www/assets/pkgs /var/lib/stork-server \
-      && chown -R stork-server:stork-server /usr/share/stork/www/assets/pkgs /var/lib/stork-server
+      && chown stork-server:stork-server /var/lib/stork-server
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
