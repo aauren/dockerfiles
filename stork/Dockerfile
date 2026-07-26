@@ -1,38 +1,34 @@
-FROM ubuntu:25.10
+FROM alpine:3
 
-# Install curl first
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      curl gpg sed grep python3 pip
+# ISC publishes Stork to Cloudsmith under any-distro/any-version, which is why this repo URL carries
+# no Alpine release in it and we can float the base on alpine:3 without the build ever breaking
+ADD --chmod=644 https://dl.cloudsmith.io/public/isc/stork/rsa.6914F776A579B428.key \
+      /etc/apk/keys/stork@isc-6914F776A579B428.rsa.pub
 
-# Install Stork apt repos
-COPY bash.deb.sh /bash.deb.sh
-RUN /bash.deb.sh
+# hadolint ignore=DL3018
+RUN echo "https://dl.cloudsmith.io/public/isc/stork/alpine/any-version/main" >> /etc/apk/repositories \
+      && apk add --no-cache ca-certificates su-exec isc-stork-server
 
-# Install Stork
-# hadolint ignore=DL3008
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      isc-stork-server wget supervisor procps ca-certificates \
-      && apt-get clean \
-      && rm -rf /var/lib/apt/lists/*
+# The package's post-install grabs whatever system UID happens to be free, which drifts as Alpine
+# adds its own users, so we pin it to 1000 to give bind mounts on the host a stable target to match
+RUN deluser stork-server \
+      && delgroup stork-server 2>/dev/null || true \
+      && addgroup -g 1000 stork-server \
+      && adduser -u 1000 -G stork-server -h /var/lib/stork-server -H -D -s /sbin/nologin \
+            -g "Stork Server User" stork-server
 
-# Setup directories
-RUN mkdir -p /var/log/supervisor \
-      && mkdir -p /etc/supervisor/conf.d/ \
-      && mkdir -p /usr/lib/stork-server/hooks \
-      && mkdir -p /usr/share/stork/www/assets/pkgs
+# Neither directory ships in the package, but the server wants both: hooks for the LDAP hook and
+# friends, pkgs for the agent installers it serves out of the web UI
+RUN mkdir -p /usr/lib/stork-server/hooks /usr/share/stork/www/assets/pkgs /var/lib/stork-server \
+      && chown -R stork-server:stork-server /usr/share/stork/www/assets/pkgs /var/lib/stork-server
 
-# COPY config files
-COPY supervisord.conf /etc/supervisor/supervisord.conf
-COPY stork-server.conf /etc/supervisor/conf.d/stork-server.conf
-
-ENTRYPOINT [ "/bin/bash", "-c", "supervisord -c /etc/supervisor/supervisord.conf"]
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
 # Used for exposing stork
 EXPOSE 8080
 
-# Used for exposing the supervisord HTTP server if desired, see:
-# http://supervisord.org/configuration.html#inet-http-server-section-settings
-#EXPOSE 9091
+# Healthcheck for stork. BusyBox wget has no --delete-after, but --spider is what we wanted anyway
+HEALTHCHECK CMD [ "wget", "-q", "--spider", "http://localhost:8080/api/version" ]
 
-# Healthcheck for stork
-HEALTHCHECK CMD [ "wget", "--delete-after", "-q", "http://localhost:8080/api/version" ]
+ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
+CMD [ "/usr/bin/stork-server" ]
