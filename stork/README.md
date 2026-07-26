@@ -39,6 +39,9 @@ services:
       STORK_DATABASE_PASSWORD: <password>
       # enables Prometheus metrics
       STORK_SERVER_ENABLE_METRICS: true
+      # uncomment to run as a different user than the default 1000:1000
+      #PUID: 1000
+      #PGID: 1000
     #volumes:
     #  - <agent_pkg_cache_path>:/usr/share/stork/www/assets/pkgs
 ```
