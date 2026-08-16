@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CURRENT_VERSION="1.0.0"
+CURRENT_VERSION="1.1.0"
 
 docker build --pull --no-cache -t aauren/netcat:${CURRENT_VERSION} -t aauren/netcat:latest . || exit 1
 
