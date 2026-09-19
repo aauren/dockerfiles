@@ -53,6 +53,20 @@ Be sure to use `restart: unless-stopped` rather than `on-failure`, because `stor
 code 2 on `SIGTERM` even when it shuts down cleanly, and `on-failure` will read a normal `docker
 stop` as a crash and restart the container.
 
+## Tags
+
+ISC ships Stork on two tracks, the same way they do Kea and BIND: a stable track with even minor
+versions (`2.4.x`, `2.2.x`, ...), and a development track with odd minor versions (`2.5.x`, `2.3.x`,
+...) that gets fixes and new features first, sometimes without ever being backported to a stable
+release. This image mirrors that with two sets of tags:
+
+- **`latest`**, **`X.Y.Z`** - built from the stable track. This is what you want unless you have a
+  specific reason not to.
+- **`edge`**, **`X.Y.Z-dev`** - built from the development track, the same convention Alpine itself
+  uses for its own rolling release. `edge` floats to whatever the newest development build is;
+  `X.Y.Z-dev` pins to a specific one. Only reach for these if you need a fix that hasn't landed in
+  stable yet, and expect less stability as a tradeoff.
+
 ## Configuration
 
 Config is all environment variables, passed through to `stork-server` untouched, so the
