@@ -2,19 +2,19 @@ FROM alpine:3
 
 # Kept in sync with the pinned stork-server package below by build_container.sh, so the image's
 # own metadata (`docker inspect`) reports the same version we tagged it with
-LABEL org.opencontainers.image.version="2.4.1"
+LABEL org.opencontainers.image.version="2.5.1"
 
 # ISC publishes Stork to Cloudsmith under any-distro/any-version, which is why this repo URL carries
 # no Alpine release in it and we can float the base on alpine:3 without the build ever breaking
-ADD --chmod=644 https://dl.cloudsmith.io/public/isc/stork/rsa.6914F776A579B428.key \
-      /etc/apk/keys/stork@isc-6914F776A579B428.rsa.pub
+ADD --chmod=644 https://dl.cloudsmith.io/public/isc/stork-dev/rsa.BF2C56ECBA97B498.key \
+      /etc/apk/keys/stork-dev@isc-BF2C56ECBA97B498.rsa.pub
 
 # Pinned to a specific upstream release so a rebuild never silently drags in a newer stork-server.
 # build_container.sh looks up the current stable version and rewrites this line before each build,
 # so don't bump it by hand.
 # hadolint ignore=DL3018
-RUN echo "https://dl.cloudsmith.io/public/isc/stork/alpine/any-version/main" >> /etc/apk/repositories \
-      && apk add --no-cache ca-certificates su-exec isc-stork-server=2.4.1.260508132209
+RUN echo "https://dl.cloudsmith.io/public/isc/stork-dev/alpine/any-version/main" >> /etc/apk/repositories \
+      && apk add --no-cache ca-certificates su-exec isc-stork-server=2.5.1.260807142332
 
 # The package's post-install grabs whatever system UID happens to be free, which drifts as Alpine
 # adds its own users, so we pin it to 1000 to give bind mounts on the host a stable target to match
