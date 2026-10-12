@@ -3,8 +3,8 @@ FROM ubuntu:26.04
 # hadolint ignore=DL3008
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     zsh curl wget openssh-server strace iproute2 tshark lshw usbutils pciutils net-tools vim tcpdump \
-      software-properties-common bmon ncdu less containerd git build-essential file jq traceroute ipvsadm ipset \
-      iptables python3 python3-pip python3-ipython tcpflow termshark \
+      software-properties-common bmon ncdu less containerd git build-essential file jq traceroute iputils-ping \
+      ipvsadm ipset iptables python3 python3-pip python3-ipython tcpflow termshark \
       && apt-get clean \
       && rm -rf /var/lib/apt/lists/*
 
