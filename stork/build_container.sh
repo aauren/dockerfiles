@@ -10,6 +10,10 @@
 # a stable release, if they get backported at all. Pass "dev" as the first argument to build
 # against that track when you need a fix that only landed there.
 #
+# Right after a stable release (say 2.6.0) the dev track still tops out at the previous dev series
+# (2.5.x) until ISC cuts the next one (2.7.0). In that gap a dev build builds from the stable track
+# instead and only moves "edge", so that "edge" never trails "latest".
+#
 # Usage: ./build_container.sh [stable|dev]
 
 set -euo pipefail
@@ -17,14 +21,19 @@ set -euo pipefail
 CHANNEL="${1:-stable}"
 DOCKERFILE="Dockerfile"
 
+STABLE_REPO="stork"
+STABLE_KEY_ID="6914F776A579B428"
+DEV_REPO="stork-dev"
+DEV_KEY_ID="BF2C56ECBA97B498"
+
 case "${CHANNEL}" in
     stable)
-        REPO_NAME="stork"
-        KEY_ID="6914F776A579B428"
+        REPO_NAME="${STABLE_REPO}"
+        KEY_ID="${STABLE_KEY_ID}"
         ;;
     dev)
-        REPO_NAME="stork-dev"
-        KEY_ID="BF2C56ECBA97B498"
+        REPO_NAME="${DEV_REPO}"
+        KEY_ID="${DEV_KEY_ID}"
         ;;
     *)
         echo "Unknown channel '${CHANNEL}', expected 'stable' or 'dev'" >&2
@@ -32,18 +41,35 @@ case "${CHANNEL}" in
         ;;
 esac
 
-REPO_URL="https://dl.cloudsmith.io/public/isc/${REPO_NAME}/alpine/any-version/main"
-
 # Cloudsmith's index only ever carries the packages for its own repo/track, so the highest
-# version in it is the newest release on whichever track we asked for
-STORK_VERSION=$(curl -sL "${REPO_URL}/x86_64/APKINDEX.tar.gz" \
-      | tar -Ozx APKINDEX \
-      | awk '/^P:isc-stork-server$/{getline; print substr($0,3)}' \
-      | sort -V | tail -n1)
+# version in it is the newest release on that track
+latest_version() {
+    local repo="$1" version
+    version=$(curl -sL "https://dl.cloudsmith.io/public/isc/${repo}/alpine/any-version/main/x86_64/APKINDEX.tar.gz" \
+          | tar -Ozx APKINDEX \
+          | awk '/^P:isc-stork-server$/{getline; print substr($0,3)}' \
+          | sort -V | tail -n1)
 
-if [ -z "${STORK_VERSION}" ]; then
-    echo "Failed to determine latest isc-stork-server version from the ${REPO_NAME} repo" >&2
-    exit 1
+    if [ -z "${version}" ]; then
+        echo "Failed to determine latest isc-stork-server version from the ${repo} repo" >&2
+        return 1
+    fi
+    echo "${version}"
+}
+
+STORK_VERSION=$(latest_version "${REPO_NAME}")
+
+EDGE_FROM_STABLE=false
+if [ "${CHANNEL}" = "dev" ]; then
+    STABLE_VERSION=$(latest_version "${STABLE_REPO}")
+    NEWEST=$(printf '%s\n%s\n' "${STORK_VERSION}" "${STABLE_VERSION}" | sort -V | tail -n1)
+    if [ "${NEWEST}" = "${STABLE_VERSION}" ]; then
+        echo "Stable ${STABLE_VERSION} is newer than dev ${STORK_VERSION}, building edge from stable"
+        REPO_NAME="${STABLE_REPO}"
+        KEY_ID="${STABLE_KEY_ID}"
+        STORK_VERSION="${STABLE_VERSION}"
+        EDGE_FROM_STABLE=true
+    fi
 fi
 
 # apk package versions carry a build timestamp (e.g. 2.4.1.260508132209) that we don't want
@@ -60,7 +86,12 @@ sed -i -E "s#(https://dl\.cloudsmith\.io/public/isc/)[a-z-]+(/alpine/any-version
 sed -i -E "/^ +&& apk add/ s/isc-stork-server(=[^ ]+)?/isc-stork-server=${STORK_VERSION}/" "${DOCKERFILE}"
 sed -i -E "s/(org\.opencontainers\.image\.version=)\"[^\"]*\"/\1\"${IMAGE_VERSION}\"/" "${DOCKERFILE}"
 
-if [ "${CHANNEL}" = "dev" ]; then
+if [ "${EDGE_FROM_STABLE}" = "true" ]; then
+    # This isn't a dev build, so it gets no "-dev" tag, and "latest" / "X.Y.Z" stay owned by the
+    # stable channel
+    docker build --pull --no-cache -t aauren/stork:edge .
+    docker push aauren/stork:edge
+elif [ "${CHANNEL}" = "dev" ]; then
     # Dev-track builds are never what "latest" should mean, so they get a version-pinned tag plus
     # a floating "edge" tag instead, the same convention Alpine itself uses for its own rolling
     # release. "latest" is never touched here

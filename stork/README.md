@@ -65,7 +65,10 @@ release. This image mirrors that with two sets of tags:
 - **`edge`**, **`X.Y.Z-dev`** - built from the development track, the same convention Alpine itself
   uses for its own rolling release. `edge` floats to whatever the newest development build is;
   `X.Y.Z-dev` pins to a specific one. Only reach for these if you need a fix that hasn't landed in
-  stable yet, and expect less stability as a tradeoff.
+  stable yet, and expect less stability as a tradeoff. Right after a stable release (say `2.6.0`),
+  the development track still tops out at the previous series (`2.5.x`) until ISC cuts the next
+  one, so for that stretch `edge` is built from stable instead in order to never fall behind
+  `latest`.
 
 ## Configuration
 
