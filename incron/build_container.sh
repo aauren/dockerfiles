@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CURRENT_VERSION="1.2.0"
+CURRENT_VERSION="20261022"
 
 docker build --pull --no-cache -t aauren/incron:${CURRENT_VERSION} -t aauren/incron:latest . || exit 1
 
