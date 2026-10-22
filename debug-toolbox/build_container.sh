@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CURRENT_VERSION="20261011"
+CURRENT_VERSION="20261022"
 
 docker build --pull --no-cache -t aauren/debug-toolbox:${CURRENT_VERSION} -t aauren/debug-toolbox:latest . || exit 1
 
